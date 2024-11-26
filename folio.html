@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>برنامج متابعة التحدي</title>
+    <style>
+        /* التنسيق العام */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            background: linear-gradient(135deg, #ffffff, #6146e7); /* التدرج اللوني الأساسي */
+    backdrop-filter: blur(20px);
+    background-size: cover;
+    height: 100vh;
+    animation: gradientAnimation 10s ease infinite;            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+
+        .container {
+            display: grid;
+            gap: 20px;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            margin: auto;
+        }
+
+        .card {
+            background: linear-gradient(135deg, #6a11cb, #2575fc);
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card h2 {
+            margin: 0;
+            font-size: 1.5rem;
+            color: #fff;
+        }
+
+        .card p {
+            margin: 10px 0;
+        }
+
+        button {
+            background: rgba(255, 255, 255, 0.8);
+            color: #333;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            background: white;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        form {
+            margin: 10px 0;
+        }
+
+        form input {
+            padding: 10px;
+            width: calc(100% - 22px);
+            margin: 5px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        .progress {
+            margin: 20px 0;
+            width: 100%;
+            height: 30px;
+            background: #ddd;
+            border-radius: 20px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            border-radius: 20px;
+            background: linear-gradient(to right, #ff4500, #ff9900, #32cd32, #1e90ff);
+            transition: width 0.5s ease, background 0.5s ease;
+        }
+
+        #progressText {
+            text-align: center;
+            font-size: 18px;
+            color: #333;
+            margin-top: 10px;
+        }
+
+        #birthdayCountdown {
+            font-size: 1.2rem;
+            color: #fff;
+            background: #ff7f50;
+            padding: 10px;
+            border-radius: 10px;
+        }
+        
+@keyframes gradientAnimation {
+    0% {
+        background-position: 0% 50%; /* بداية التدرج */
+    }
+    50% {
+        background-position: 100% 50%; /* منتصف الأنيميشن */
+    }
+    100% {
+        background-position: 0% 50%; /* العودة إلى الوضع الأول */
+    }
+}
+    </style>
+</head>
+<body>
+    <h1>برنامج متابعة التحدي</h1>
+    <div class="container">
+        <!-- الملف الشخصي -->
+        <div class="card">
+            <h2>الملف الشخصي</h2>
+            <div id="profileInfo">
+                <p>البيانات غير متوفرة</p>
+            </div>
+            <button id="editProfileBtn" onclick="showProfileForm()">تعديل الملف الشخصي</button>
+            <form id="profileForm" class="hidden" onsubmit="saveProfile(event)">
+                <input type="text" id="name" placeholder="اسمك" required>
+                <input type="number" id="weight" placeholder="وزنك بالكيلوغرام (مثال: 70)" required>
+                <input type="number" id="height" placeholder="طولك بالسنتيمتر (مثال: 170)" required>
+                <input type="date" id="dob" placeholder="تاريخ الميلاد" required>
+                <button type="submit">حفظ</button>
+            </form>
+        </div>
+
+        <!-- العمر و BMI -->
+        <div class="card">
+            <h2>تفاصيل صحية</h2>
+            <p id="age">العمر: ---</p>
+            <p id="bmi">مؤشر كتلة الجسم (BMI): ---</p>
+        </div>
+
+        <!-- شريط التقدم -->
+        <div class="card">
+            <h2>شريط التقدم</h2>
+            <div class="progress">
+                <div class="progress-bar" id="progressBar"></div>
+            </div>
+            <p id="progressText">0 يوم من التقدم</p>
+        </div>
+
+        <!-- سجل الأيام المنتهية -->
+        <div class="card">
+            <button onclick="toggleCompletedDays()">عرض السجل</button>
+            
+            <!-- قائمة منسدلة لاختيار اليوم -->
+            <select id="selectDay" class="hidden" onchange="showDayReport()">
+                <option value="">اختر اليوم</option>
+            </select>
+            
+            <!-- عرض التقرير المفصل -->
+            <div id="dayReport" class="hidden">
+                <h3>تقرير اليوم</h3>
+                <p><strong>المهام:</strong> <span id="tasks"></span></p>
+                <p><strong>الملاحظات:</strong> <span id="notes"></span></p>
+                <p><strong>المدة:</strong> <span id="duration"></span></p>
+            </div>
+            
+            <table id="completedDaysTable" class="hidden">
+                <thead>
+                    <tr>
+                        <th>اليوم</th>
+                        <th>الوصف</th>
+                    </tr>
+                </thead>
+                <tbody id="completedDaysTableBody">
+                    <!-- السجل سيتم إضافته هنا -->
+                </tbody>
+            </table>
+        </div>
+        
+
+        <!-- كلمة مرور لتفريغ البيانات -->
+        <div class="card">
+            <h2>تفريغ البيانات</h2>
+            <input type="password" id="password" placeholder="أدخل كلمة المرور لتفريغ البيانات">
+            <button onclick="clearData()">تفريغ البيانات</button>
+        </div>
+
+        <!-- العد التنازلي لعيد الميلاد -->
+        <div class="card">
+            <h2>الوقت المتبقي لعيد ميلادك</h2>
+            <p id="birthdayCountdown">---</p>
+        </div>
+    </div>
+
+    <script>
+        let profileData = JSON.parse(localStorage.getItem('profileData')) || {};
+        let completedDays = JSON.parse(localStorage.getItem('completedDays')) || 0;
+        let completedDaysData = JSON.parse(localStorage.getItem('completedDaysData')) || [];
+
+        window.onload = function () {
+            checkProfileData();
+            updateProgress();
+            displayCompletedDays();
+            updateBirthdayCountdown();
+        };
+
+        function checkProfileData() {
+            if (Object.keys(profileData).length === 0) {
+                document.getElementById("profileInfo").innerHTML = "<p>لم تقم بإدخال بياناتك الشخصية بعد.</p>";
+            } else {
+                updateProfileInfo();
+            }
+        }
+
+        function showProfileForm() {
+            document.getElementById("profileForm").classList.toggle("hidden");
+        }
+
+        function saveProfile(event) {
+            event.preventDefault();
+            profileData.name = document.getElementById("name").value;
+            profileData.weight = parseFloat(document.getElementById("weight").value);
+            profileData.height = parseFloat(document.getElementById("height").value);
+            profileData.dob = document.getElementById("dob").value;
+            localStorage.setItem("profileData", JSON.stringify(profileData));
+            updateProfileInfo();
+            document.getElementById("profileForm").classList.add("hidden");
+        }
+
+        function updateProfileInfo() {
+            const { name, weight, height, dob } = profileData;
+            const age = calculateAge(dob);
+            const bmi = calculateBMI(weight, height);
+            document.getElementById("age").textContent = `العمر: ${age} سنة`;
+            document.getElementById("bmi").textContent = `مؤشر كتلة الجسم (BMI): ${bmi}`;
+
+            document.getElementById("profileInfo").innerHTML = `
+                <p><strong>الاسم:</strong> ${name}</p>
+                <p><strong>الوزن:</strong> ${weight} كجم</p>
+                <p><strong>الطول:</strong> ${height} سم</p>
+            `;
+        }
+
+        function calculateAge(dob) {
+            const birthDate = new Date(dob);
+            const today = new Date();
+            let age = today.getFullYear() - birthDate.getFullYear();
+            const m = today.getMonth() - birthDate.getMonth();
+            if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+                age--;
+            }
+            return age;
+        }
+
+        function calculateBMI(weight, height) {
+            const heightInMeters = height / 100;
+            return (weight / (heightInMeters ** 2)).toFixed(2);
+        }
+
+        function updateProgress() {
+            const percentage = Math.min((completedDays / 30) * 100, 100); 
+            const progressBar = document.getElementById("progressBar");
+            progressBar.style.width = percentage + "%";
+
+            if (percentage < 33) {
+                progressBar.style.background = "linear-gradient(to right, #f00, #ff9900)";
+            } else if (percentage < 66) {
+                progressBar.style.background = "linear-gradient(to right, #ff9900, #33cc33)";
+            } else {
+                progressBar.style.background = "linear-gradient(to right, #33cc33, #3399ff)";
+            }
+            document.getElementById("progressText").textContent = `${completedDays} يوم من التقدم`;
+        }
+// استرجاع البيانات من localStorage أو تهيئة المصفوفة
+
+
+
+// إضافة يوم جديد إلى السجل
+completedDaysData.push({
+    day: "اليوم 1",
+    description: "تم التحدي بنجاح",
+    tasks: "تمت ممارسة التمرين الأول",
+    notes: "شعرت بالتعب قليلًا في البداية، لكن تحسنت مع الوقت.",
+    duration: "45 دقيقة"
+});
+localStorage.setItem('completedDaysData', JSON.stringify(completedDaysData));
+
+// دالة لعرض السجل في شكل جدول
+function displayCompletedDays() {
+    const tableBody = document.getElementById("completedDaysTableBody");
+    tableBody.innerHTML = '';  // إفراغ الجسم قبل إضافة البيانات الجديدة
+    const selectDay = document.getElementById("selectDay");
+    selectDay.innerHTML = '<option value="">اختر اليوم</option>'; // إعادة تعيين الخيارات
+    
+    completedDaysData.forEach((entry, index) => {
+        // إضافة اليوم إلى القائمة المنسدلة
+        const option = document.createElement("option");
+        option.value = index;
+        option.textContent = entry.day;
+        selectDay.appendChild(option);
+
+        const row = document.createElement("tr");
+        
+        const dayCell = document.createElement("td");
+        dayCell.textContent = entry.day;
+        
+        const descriptionCell = document.createElement("td");
+        descriptionCell.textContent = entry.description;
+
+        row.appendChild(dayCell);
+        row.appendChild(descriptionCell);
+        tableBody.appendChild(row);
+    });
+}
+
+// استدعاء دالة عرض السجل بعد إضافة اليوم الجديد
+displayCompletedDays();
+
+// دالة لعرض/إخفاء الجدول
+function toggleCompletedDays() {
+    const table = document.getElementById("completedDaysTable");
+    table.classList.toggle("hidden");
+    const selectDay = document.getElementById("selectDay");
+    selectDay.classList.toggle("hidden");
+}
+
+// دالة لعرض التقرير عند اختيار يوم
+function showDayReport() {
+    const selectedIndex = document.getElementById("selectDay").value;
+    const reportDiv = document.getElementById("dayReport");
+    
+    // إخفاء التقرير إذا لم يتم اختيار أي يوم
+    if (selectedIndex === "") {
+        reportDiv.classList.add("hidden");
+        return;
+    }
+
+    const selectedDayData = completedDaysData[selectedIndex];
+
+    // عرض تفاصيل اليوم المحدد
+    document.getElementById("tasks").textContent = selectedDayData.tasks;
+    document.getElementById("notes").textContent = selectedDayData.notes;
+    document.getElementById("duration").textContent = selectedDayData.duration;
+
+    reportDiv.classList.remove("hidden");
+}
+// استدعاء دالة عرض السجل بعد إضافة اليوم الجديد
+displayCompletedDays();
+
+// دالة لعرض/إخفاء الجدول
+function toggleCompletedDays() {
+    const table = document.getElementById("completedDaysTable");
+    table.classList.toggle("hidden");
+}
+        function clearData() {
+            const password = document.getElementById("password").value;
+            if (password === "652002") {
+                localStorage.clear();
+                location.reload();
+            } else {
+                alert("كلمة المرور غير صحيحة");
+            }
+        }
+
+        function updateBirthdayCountdown() {
+            const birthday = new Date(profileData.dob);
+            const today = new Date();
+            birthday.setFullYear(today.getFullYear());
+
+            if (birthday < today) {
+                birthday.setFullYear(today.getFullYear() + 1);
+            }
+
+            const timeDiff = birthday - today;
+
+            const days = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
+            const months = Math.floor(days / 30);
+            const remainingDays = days % 30;
+            const hours = Math.floor((timeDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
+
+            document.getElementById("birthdayCountdown").textContent = `${months} شهور, ${remainingDays} أيام, ${hours} ساعات, ${minutes} دقائق`;
+        }
+    </script>
+</body>
+</html>
